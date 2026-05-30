@@ -5,8 +5,8 @@ import express from "express";
 import {
   // initDatabase,
   // seedInitialData
-   pool,
-   } from "./config/database";
+  pool,
+} from "./config/database";
 import {
   createJob,
   getJobs,
@@ -33,13 +33,15 @@ app.post("/api/jobs/:id/assign-reporter", autoAssignReporter);
 app.post("/api/jobs/:id/assign-editor", assignEditorManually);
 app.patch("/api/jobs/:id/status", updateJobStatus);
 
-pool
-  .connect()
-  .then(async () => {
-    // await initDatabase(); Only run once to create tables, comment out after first run
-    // await seedInitialData();  Only run once to seed initial data, comment out after first run
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-  })
-  .catch((err) => console.error("Connection to DB failed:", err));
+if (process.env.NODE_ENV !== "production") {
+  // pool
+  //   .connect()
+  //   .then(async () => {
+  //     // await initDatabase(); Only run once to create tables, comment out after first run
+  //     // await seedInitialData();  Only run once to seed initial data, comment out after first run
+  //     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  //   })
+  //   .catch((err) => console.error("Connection to DB failed:", err));
+}
 
 export default app;
