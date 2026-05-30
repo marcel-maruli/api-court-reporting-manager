@@ -1,0 +1,41 @@
+{
+  "name": "api-court-reporting-manager",
+  "version": "1.0.0",
+  "description": "API for court reporting manager",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcel-maruli/api-court-reporting-manager.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/marcel-maruli/api-court-reporting-manager/issues"
+  },
+  "homepage": "https://github.com/marcel-maruli/api-court-reporting-manager#readme",
+  "dependencies": {
+    "@google/genai": "^2.7.0",
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "multer": "^2.1.1",
+    "openai": "^6.39.1",
+    "pg": "^8.21.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.9.1",
+    "@types/pg": "^8.20.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^6.0.3"
+  }
+}
