@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import cors from "cors";
 import {
   initDatabase,
   seedInitialData,
@@ -19,9 +20,11 @@ import { createUser, getAllUsers } from "./controllers/user.controller";
 import multer from "multer";
 
 const app = express();
+
 const upload = multer({ storage: multer.memoryStorage() });
 const PORT = 3000;
 
+app.use(cors());
 app.use(express.json());
 app.post("/upload-audio", upload.single("audio"), uploadAudioForTranscription);
 app.get("/api/users", getAllUsers);
