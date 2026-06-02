@@ -18,14 +18,40 @@ export class JobRepository {
 
   async findAll(): Promise<any[]> {
     const query = `
-      SELECT j.*, jr.name as reporter_name, je.name as editor_name
+      SELECT j.*, jr.name as reporter_name, je.name as editor_name, fp_reporter.amount as total_payout_reporter,fp_editor.amount as total_payout_editor,  fp.payment_status as payout_status
       FROM jobs j
       LEFT JOIN users jr ON j.reporter_id = jr.id
       LEFT JOIN users je ON j.editor_id = je.id
+      LEFT JOIN financial_payouts fp ON j.id = fp.job_id
+      LEFT JOIN financial_payouts fp_reporter ON j.id = fp_reporter.job_id AND fp_reporter.payout_role = 'REPORTER'
+      LEFT JOIN financial_payouts fp_editor ON j.id = fp_editor.job_id AND fp_editor.payout_role = 'EDITOR'
       ORDER BY j.id DESC
     `;
     const { rows } = await pool.query(query);
-    return rows;
+
+    return rows.map((row) => ({
+      id: row.id,
+      case_name: row.case_name,
+      duration_minutes: row.duration_minutes,
+      location_type: row.location_type,
+      city: row.city,
+      recording_text: row.recording_text,
+      status: row.status,
+      pic: {
+        reporter: {
+          id: row.reporter_id,
+          name: row.reporter_name,
+          payout: row.total_payout_reporter || 0,
+          payout_status: row.payout_status,
+        },
+        editor: {
+          id: row.editor_id,
+          name: row.editor_name,
+          payout: row.total_payout_editor || 0,
+          payout_status: row.payout_status,
+        },
+      },
+    }));
   }
 
   async findById(id: number): Promise<JobRow | null> {
@@ -73,7 +99,7 @@ export class JobRepository {
     newStatus: string,
   ): Promise<JobRow> {
     const job = await this.findById(jobId);
-    if (!job) throw new Error("Job tidak ditemukan");
+    if (!job) throw new Error("Job not found");
 
     let reporterPayout = Number(job.reporter_payout);
     let editorPayout = Number(job.editor_payout);

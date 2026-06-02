@@ -44,7 +44,7 @@ export const getJobs = async (
     const jobs = await jobRepo.findAll();
     res.status(200).json({ success: true, data: jobs });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal Server Error" });
+    res.status(500).json({ success: false, message: "Internal Server Error",error: error instanceof Error ? error.message : error });
   }
 };
 
@@ -135,7 +135,7 @@ export const uploadAudioForTranscription = async (
 ): Promise<Response | void> => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: "Tidak ada file yang diunggah" });
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
     const audioFile = await toFile(req.file.buffer, req.file.originalname, {
@@ -150,6 +150,6 @@ export const uploadAudioForTranscription = async (
     res.json({ transcription: transcription.text });
   } catch (error: any) {
     console.error("OpenAI Error:", error);
-    res.status(500).json({ error: error.message || "Gagal memproses audio" });
+    res.status(500).json({ error: error.message || "Failed to process audio" });
   }
 };
