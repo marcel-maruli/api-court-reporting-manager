@@ -18,14 +18,29 @@ export class JobRepository {
 
   async findAll(): Promise<any[]> {
     const query = `
-      SELECT j.*, jr.name as reporter_name, je.name as editor_name, fp_reporter.amount as total_payout_reporter,fp_editor.amount as total_payout_editor,  fp.payment_status as payout_status
-      FROM jobs j
-      LEFT JOIN users jr ON j.reporter_id = jr.id
-      LEFT JOIN users je ON j.editor_id = je.id
-      LEFT JOIN financial_payouts fp ON j.id = fp.job_id
-      LEFT JOIN financial_payouts fp_reporter ON j.id = fp_reporter.job_id AND fp_reporter.payout_role = 'REPORTER'
-      LEFT JOIN financial_payouts fp_editor ON j.id = fp_editor.job_id AND fp_editor.payout_role = 'EDITOR'
-      ORDER BY j.id DESC
+    WITH ReporterPayouts AS (
+      SELECT job_id, amount as reporter_amount, payment_status
+      FROM financial_payouts
+      WHERE payout_role = 'REPORTER'
+    ),
+    EditorPayouts AS (
+      SELECT job_id, amount as editor_amount
+      FROM financial_payouts
+      WHERE payout_role = 'EDITOR'
+    )
+    SELECT 
+      j.*, 
+      jr.name as reporter_name, 
+      je.name as editor_name,
+      rp.reporter_amount as total_payout_reporter,
+      ep.editor_amount as total_payout_editor,
+      rp.payment_status as payout_status
+    FROM jobs j
+    LEFT JOIN users jr ON j.reporter_id = jr.id
+    LEFT JOIN users je ON j.editor_id = je.id
+    LEFT JOIN ReporterPayouts rp ON j.id = rp.job_id
+    LEFT JOIN EditorPayouts ep ON j.id = ep.job_id
+    ORDER BY j.id DESC;
     `;
     const { rows } = await pool.query(query);
 
@@ -139,8 +154,8 @@ export class JobRepository {
 
     if (newStatus === "COMPLETED") {
       await pool.query(
-        `UPDATE financial_payouts SET payment_status = PAID WHERE job_id = $1`,
-        [jobId, job.editor_id, job.reporter_id],
+        `UPDATE financial_payouts SET payment_status = 'PAID' WHERE job_id = $1`,
+        [jobId],
       );
     }
 
