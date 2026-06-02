@@ -64,29 +64,15 @@ export const getReporters = async (
   }
 };
 
-export const autoAssignReporter = async (
+export const assignReporterManually = async (
   req: Request,
   res: Response,
 ): Promise<Response | void> => {
   try {
     const { id } = req.params;
-    const reporter = await jobRepo.findAvailableReporter(Number(id));
-
-    if (!reporter) {
-      res.status(404).json({
-        success: false,
-        message:
-          "No available reporters found for this location or criteria at the moment",
-      });
-      return;
-    }
-
-    const updatedJob = await jobRepo.assignReporter(Number(id), reporter.id);
-    res.status(200).json({
-      success: true,
-      message: `Successfully assigned reporter ${reporter.name} to the job`,
-      data: updatedJob,
-    });
+    const { reporterId } = req.body;
+    const updatedJob = await jobRepo.assignReporter(Number(id), Number(reporterId));
+    res.status(200).json({ success: true, data: updatedJob });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
