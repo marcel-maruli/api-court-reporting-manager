@@ -12,14 +12,6 @@ You can test the API using Postman, Insomnia, or any HTTP client:
 https://api-court-reporting-manager-esfx.vercel.app/
 ```
 
----
-
-## 📸 Sample Response
-
-![Postman API Response](./assets/api-response-screenshot.png)
-
----
-
 ## ✨ Features
 
 ### Job Lifecycle Management
