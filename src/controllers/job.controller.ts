@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import  { Request, Response } from "express";
 import { ZodError } from "zod";
 import { JobRepository } from "../repositories/job.repository";
 import { CreateJobSchema, UpdateStatusSchema } from "../schemas/job.schema";

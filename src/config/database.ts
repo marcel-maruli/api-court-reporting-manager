@@ -47,7 +47,6 @@ export const initDatabase = async (): Promise<void> => {
   `;
 
   try {
-    // Jalankan kueri pembuatan tabel
     await pool.query(createUsersTableQuery);
     console.log("✅ Database initialization successful (Tables are ready).");
   } catch (error) {
