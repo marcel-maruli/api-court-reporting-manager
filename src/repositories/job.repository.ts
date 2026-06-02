@@ -98,37 +98,44 @@ export class JobRepository {
     jobId: number,
     newStatus: string,
   ): Promise<JobRow> {
-    const job = await this.findById(jobId);
+    const { rows: jobRows } = await pool.query<JobRow>(
+      "SELECT * FROM jobs WHERE id = $1",
+      [jobId],
+    );
+    const job = jobRows[0];
+
     if (!job) throw new Error("Job not found");
 
-    let reporterPayout = Number(job.reporter_payout);
-    let editorPayout = Number(job.editor_payout);
+    const { rows: updatedRows } = await pool.query<JobRow>(
+      "UPDATE jobs SET status = $1 WHERE id = $2 RETURNING *",
+      [newStatus, jobId],
+    );
+    const updatedJob = updatedRows[0];
 
     if (
       newStatus === "TRANSCRIBED" ||
       newStatus === "REVIEWED" ||
       newStatus === "COMPLETED"
     ) {
-      reporterPayout = job.duration_minutes * 2000;
+      const reporterAmount = job.duration_minutes * 2000;
+      await pool.query(
+        `INSERT INTO financial_payouts (job_id, user_id, payout_role, amount, payment_status)
+         VALUES ($1, $2, 'REPORTER', $3, 'PENDING')
+         ON CONFLICT (job_id, payout_role) DO UPDATE SET amount = $3`,
+        [jobId, job.reporter_id, reporterAmount],
+      );
     }
+
     if (newStatus === "REVIEWED" || newStatus === "COMPLETED") {
-      editorPayout = 50000;
+      const editorAmount = 50000;
+      await pool.query(
+        `INSERT INTO financial_payouts (job_id, user_id, payout_role, amount, payment_status)
+         VALUES ($1, $2, 'EDITOR', $3, 'PENDING')
+         ON CONFLICT (job_id, payout_role) DO UPDATE SET amount = $3`,
+        [jobId, job.editor_id, editorAmount],
+      );
     }
 
-    const totalPayout = reporterPayout + editorPayout;
-
-    const query = `
-      UPDATE jobs 
-      SET status = $1, reporter_payout = $2, editor_payout = $3, total_payout = $4
-      WHERE id = $5 RETURNING *
-    `;
-    const { rows } = await pool.query<JobRow>(query, [
-      newStatus,
-      reporterPayout,
-      editorPayout,
-      totalPayout,
-      jobId,
-    ]);
-    return rows[0];
+    return updatedJob;
   }
 }

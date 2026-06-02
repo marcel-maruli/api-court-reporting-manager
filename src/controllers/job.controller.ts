@@ -127,6 +127,7 @@ export const updateJobStatus = async (
       res.status(400).json({ success: false, errors: error.issues });
       return;
     }
+    console.log(error)
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
