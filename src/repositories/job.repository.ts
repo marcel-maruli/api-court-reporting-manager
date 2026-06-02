@@ -113,11 +113,7 @@ export class JobRepository {
     );
     const updatedJob = updatedRows[0];
 
-    if (
-      newStatus === "TRANSCRIBED" ||
-      newStatus === "REVIEWED" ||
-      newStatus === "COMPLETED"
-    ) {
+    if (newStatus === "TRANSCRIBED") {
       const reporterAmount = job.duration_minutes * 2000;
       await pool.query(
         `INSERT INTO financial_payouts (job_id, user_id, payout_role, amount, payment_status)
@@ -125,9 +121,13 @@ export class JobRepository {
          ON CONFLICT (job_id, payout_role) DO UPDATE SET amount = $3`,
         [jobId, job.reporter_id, reporterAmount],
       );
+      await pool.query(`UPDATE jobs SET recording_text = $1 WHERE id = $2`, [
+        recordingText,
+        jobId,
+      ]);
     }
 
-    if (newStatus === "REVIEWED" || newStatus === "COMPLETED") {
+    if (newStatus === "REVIEWED") {
       const editorAmount = 50000;
       await pool.query(
         `INSERT INTO financial_payouts (job_id, user_id, payout_role, amount, payment_status)
@@ -137,10 +137,11 @@ export class JobRepository {
       );
     }
 
-    if (newStatus === "TRANSCRIBED") {
+    if (newStatus === "COMPLETED") {
       await pool.query(
-        `UPDATE jobs SET recording_text = $1 WHERE id = $2`, [recordingText, jobId]
-      )
+        `UPDATE financial_payouts SET payment_status = PAID WHERE job_id = $1`,
+        [jobId, job.editor_id, job.reporter_id],
+      );
     }
 
     return updatedJob;
