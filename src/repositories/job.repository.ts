@@ -139,7 +139,7 @@ export class JobRepository {
 
     if (newStatus === "TRANSCRIBED") {
       await pool.query(
-        `UPDATE jobs SET recording_text = $1`, [recordingText]
+        `UPDATE jobs SET recording_text = $1 WHERE id = $2`, [recordingText, jobId]
       )
     }
 
