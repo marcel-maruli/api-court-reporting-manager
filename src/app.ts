@@ -15,6 +15,7 @@ import {
   assignEditorManually,
   updateJobStatus,
   uploadAudioForTranscription,
+  getReporters,
 } from "./controllers/job.controller";
 import { createUser, getAllUsers } from "./controllers/user.controller";
 import multer from "multer";
@@ -32,6 +33,7 @@ app.post("/api/users", createUser);
 
 app.post("/api/jobs", createJob);
 app.get("/api/jobs", getJobs);
+app.get("/api/jobs/:id/reporters", getReporters); 
 app.post("/api/jobs/:id/assign-reporter", autoAssignReporter);
 app.post("/api/jobs/:id/assign-editor", assignEditorManually);
 app.patch("/api/jobs/:id/status", updateJobStatus);

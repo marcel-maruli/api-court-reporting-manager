@@ -48,6 +48,22 @@ export const getJobs = async (
   }
 };
 
+export const getReporters = async (
+  req: Request,
+  res: Response,
+): Promise<Response | void> => {
+  try {
+    const reporters = await jobRepo.findAvailableReporter(Number(req.params.id));
+    if (!reporters) {
+      res.status(404).json({ success: false, message: "No available reporters found" });
+      return;
+    }
+    res.status(200).json({ success: true, data: reporters });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal Server Error", error: error instanceof Error ? error.message : error });
+  }
+};
+
 export const autoAssignReporter = async (
   req: Request,
   res: Response,
