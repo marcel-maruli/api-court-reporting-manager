@@ -97,6 +97,7 @@ export class JobRepository {
   async updateStatusAndCalculatePayment(
     jobId: number,
     newStatus: string,
+    recordingText: string,
   ): Promise<JobRow> {
     const { rows: jobRows } = await pool.query<JobRow>(
       "SELECT * FROM jobs WHERE id = $1",
@@ -134,6 +135,12 @@ export class JobRepository {
          ON CONFLICT (job_id, payout_role) DO UPDATE SET amount = $3`,
         [jobId, job.editor_id, editorAmount],
       );
+    }
+
+    if (newStatus === "TRANSCRIBED") {
+      await pool.query(
+        `UPDATE jobs SET recording_text = $1`, [recordingText]
+      )
     }
 
     return updatedJob;

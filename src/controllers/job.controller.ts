@@ -44,7 +44,13 @@ export const getJobs = async (
     const jobs = await jobRepo.findAll();
     res.status(200).json({ success: true, data: jobs });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal Server Error",error: error instanceof Error ? error.message : error });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal Server Error",
+        error: error instanceof Error ? error.message : error,
+      });
   }
 };
 
@@ -53,14 +59,24 @@ export const getReporters = async (
   res: Response,
 ): Promise<Response | void> => {
   try {
-    const reporters = await jobRepo.findAvailableReporter(Number(req.params.id));
+    const reporters = await jobRepo.findAvailableReporter(
+      Number(req.params.id),
+    );
     if (!reporters) {
-      res.status(404).json({ success: false, message: "No available reporters found" });
+      res
+        .status(404)
+        .json({ success: false, message: "No available reporters found" });
       return;
     }
     res.status(200).json({ success: true, data: reporters });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Internal Server Error", error: error instanceof Error ? error.message : error });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal Server Error",
+        error: error instanceof Error ? error.message : error,
+      });
   }
 };
 
@@ -71,7 +87,10 @@ export const assignReporterManually = async (
   try {
     const { id } = req.params;
     const { reporterId } = req.body;
-    const updatedJob = await jobRepo.assignReporter(Number(id), Number(reporterId));
+    const updatedJob = await jobRepo.assignReporter(
+      Number(id),
+      Number(reporterId),
+    );
     res.status(200).json({ success: true, data: updatedJob });
   } catch (error) {
     res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -99,6 +118,7 @@ export const updateJobStatus = async (
   try {
     const { id } = req.params;
     const { status } = UpdateStatusSchema.parse(req.body);
+    const { recordingText } = req.body;
 
     const currentJob = await jobRepo.findById(Number(id));
     if (!currentJob) {
@@ -120,6 +140,7 @@ export const updateJobStatus = async (
     const updatedJob = await jobRepo.updateStatusAndCalculatePayment(
       Number(id),
       status,
+      recordingText
     );
     res.status(200).json({ success: true, data: updatedJob });
   } catch (error) {
@@ -127,7 +148,7 @@ export const updateJobStatus = async (
       res.status(400).json({ success: false, errors: error.issues });
       return;
     }
-    console.log(error)
+    console.log(error);
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };
